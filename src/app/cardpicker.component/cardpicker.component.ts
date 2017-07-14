@@ -1,12 +1,18 @@
 import { Component } from '@angular/core';
+import { CardModel, CardHelper } from './cardmodel';
+import * as d3 from 'd3';
+
 @Component({
   selector: 'card-picker',
   templateUrl: './cardpicker.component.html',
   styleUrls: ['./cardpicker.component.css']
 })
+
 export class CardPickerComponent {
   public card:string = '';
   public title:string = 'cp';
+  public results:CardModel[] = [];
+
   public guesser:any = {
     minimum: 1,
     maximum: 54,
@@ -20,7 +26,7 @@ export class CardPickerComponent {
      },
      //Object Literal lookup technique
      getFace:function(cardnumber):string {
-       let faces=  {
+       let faces = {
          '11':'Jack of',
          '12':'Queen of',
          '13':'King of',
@@ -29,7 +35,7 @@ export class CardPickerComponent {
        return (faces[cardnumber.toString()] || null);
      },
      createCardPicker: function():any {
-       return function() {
+       return function():string {
 
              let suits:string[] = Object.getOwnPropertyNames(this.cards);
              this.pickedCard = Math.floor(Math.random() * (this.maximum - this.minimum + 1)) + this.minimum;
@@ -50,7 +56,22 @@ export class CardPickerComponent {
    }
 
   public pick(){
-        this.card = (this.guesser.createCardPicker())();
+      for(let i=0; i < 5200; i++ ) {
+        let entry = new CardModel((this.guesser.createCardPicker())(),this.guesser.pickedCard)
+        this.results.push(entry);
+      }
+     this.results.sort(function(x, y){ return (x.cardNumber) - (y.cardNumber);})
+     let cardNumbers:CardHelper[] = [];
+     for (let n = 0; n < 54; n++) { cardNumbers.push(new CardHelper(n+1,0));}
+     let c:number = 0;
+     let q:number = 0;
+     for (let res of this.results) {
+        q = res.cardNumber;
+        if( q === cardNumbers[c].cn ) { cardNumbers[c].count ++ ;continue; }
+        cardNumbers[c+1].count ++;
+        c++;
+     }
+     console.log(cardNumbers);
   }
 
 }
