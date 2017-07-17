@@ -127,7 +127,7 @@ export class CardPickerComponent implements OnInit, AfterViewInit  {
          });
      dv.exit().remove();
 
-     var data = [10,10,10,10,10,10,10,10,10,10];
+     var data = [2,3,17,10,10,10,10,10,10,12];
 
      var width = 500,
          height = 500,
@@ -145,7 +145,12 @@ export class CardPickerComponent implements OnInit, AfterViewInit  {
          .sort(null)
          .value(function(d:any) { return d; });
 
-     var svg = d3.select(".pie").append("svg")
+
+         let clearer1 = d3.select(".piechart");
+         clearer1.selectAll("*").remove();
+
+
+     var svg = d3.select(".piechart").append("svg")
          .attr("width", width)
          .attr("height", height)
          .append("g")
