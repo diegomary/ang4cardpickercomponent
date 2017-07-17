@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component,OnInit,AfterViewInit } from '@angular/core';
 import { CardModel, CardHelper } from './cardmodel';
+import {Observable} from 'rxjs/Rx';
 import * as d3 from 'd3';
 
 @Component({
@@ -8,11 +9,10 @@ import * as d3 from 'd3';
   styleUrls: ['./cardpicker.component.css']
 })
 
-export class CardPickerComponent {
-  public card:string = '';
+export class CardPickerComponent implements OnInit, AfterViewInit  {
+
   public title:string = 'cp';
   public results:CardModel[] = [];
-
   public guesser:any = {
     minimum: 1,
     maximum: 54,
@@ -55,8 +55,27 @@ export class CardPickerComponent {
       }
    }
 
+  public ngAfterViewInit():void {
+
+    var source = Observable.interval(100).timeInterval().take(2);
+    var subscription = source.subscribe(
+         (x) => {
+          this.pick();
+          console.log('Next: ' + JSON.stringify(x));
+        },
+        function (err) {
+            console.log('Error: ' + err);
+        },
+        function () {
+            console.log('Completed');
+        });
+  }
+
+
+  public ngOnInit():void {}
   public pick(){
-      for(let i=0; i < 5200; i++ ) {
+    this.results = [];
+      for(let i = 0; i < 25000; i++ ) {
         let entry = new CardModel((this.guesser.createCardPicker())(),this.guesser.pickedCard)
         this.results.push(entry);
       }
@@ -67,11 +86,92 @@ export class CardPickerComponent {
      let q:number = 0;
      for (let res of this.results) {
         q = res.cardNumber;
-        if( q === cardNumbers[c].cn ) { cardNumbers[c].count ++ ;continue; }
+        if( q === cardNumbers[c].cn ) {
+           cardNumbers[c].count ++ ;
+           continue;
+          }
         cardNumbers[c+1].count ++;
         c++;
      }
-     console.log(cardNumbers);
-  }
+     let relevantValues = cardNumbers.map(function(x) {
+        return x.count;
+     });
+     console.log(relevantValues);
+     let clearer = d3.select(".bar");
+     clearer.selectAll("*").remove();
+     let dv = d3.select(".bar")
+     .selectAll("div")
+     .data(relevantValues)
+     dv.enter().append("div")
+     .text(function(d) { return d; })
+     //.attr("class","isto")
+     .style("display","inline-block")
+     .style("background-color", function(d) {
+       var x = Math.floor(Math.random() * 256);
+       var y = Math.floor(Math.random() * 256);
+       var z = Math.floor(Math.random() * 256);
+       let bgColor = "rgb(" + x + "," + y + "," + z + ")";
+       return bgColor
+      })
+     .style("vertical-align","bottom")
+     .style("color","yellow")
+     .style("font-family","verdana")
+     .style("margin-right","0.1%")
+     .style("width","1.75%")
+     .style("font-size","xx-small")
+     .style("text-align","center")
+     .style("padding-top","50px")
+     .style("height", function(d) {
+           var barHeight = d ;
+           return barHeight + "px";
+         });
+     dv.exit().remove();
 
+     var data = [10,10,10,10,10,10,10,10,10,10];
+
+     var width = 500,
+         height = 500,
+         radius = Math.min(width, height) / 2;
+
+     var arc = d3.arc()
+         .outerRadius(radius - 10)
+         .innerRadius(0);
+
+     var labelArc = d3.arc()
+         .outerRadius(radius - 40)
+         .innerRadius(radius - 40);
+
+     var pie = d3.pie()
+         .sort(null)
+         .value(function(d:any) { return d; });
+
+     var svg = d3.select(".pie").append("svg")
+         .attr("width", width)
+         .attr("height", height)
+         .append("g")
+         .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+       var g = svg.selectAll(".arc")
+           .data(pie(data))
+         .enter().append("g")
+           .attr("class", "arc");
+
+       g.append("path")
+           .attr("d", <any> arc)
+           .style("fill", function(d:any) {
+             var x = Math.floor(Math.random() * 256);
+             var y = Math.floor(Math.random() * 256);
+             var z = Math.floor(Math.random() * 256);
+             let bgColor = "rgb(" + x + "," + y + "," + z + ")";
+             return bgColor
+            });
+
+       g.append("text")
+           .attr("transform", function(d:any) { return "translate(" + labelArc.centroid(d) + ")"; })
+           .attr("dy", ".35em")
+           .text(function(d:any) { return d.data; });
+
+
+
+  }
 }

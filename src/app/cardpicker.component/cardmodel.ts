@@ -7,7 +7,6 @@ export class CardModel{
       }
 }
 
-
 export class CardHelper {
   public cn:number;
   public count:number;
