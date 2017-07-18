@@ -57,7 +57,7 @@ export class CardPickerComponent implements OnInit, AfterViewInit  {
 
   public ngAfterViewInit():void {
 
-    var source = Observable.interval(100).timeInterval().take(2);
+    var source = Observable.interval(500).timeInterval().take(80);
     var subscription = source.subscribe(
          (x) => {
           this.pick();
@@ -127,36 +127,43 @@ export class CardPickerComponent implements OnInit, AfterViewInit  {
          });
      dv.exit().remove();
 
-     var data = [2,3,17,10,10,10,10,10,10,12];
+     //we calculate now the sum of values mind that 0 is the initialvalue
+     // please note that such sum is equal to the number of iterations
+     let sumOfRelevantValues = relevantValues.reduce((a, b) => a + b, 0);
 
-     var width = 500,
-         height = 500,
+     // Now we can calculate the percentages in order to populate the piechart
+     // with proper values
+     let relevantValuesPercentages = relevantValues.map(function(x) {
+        return (x /25000) * 100;
+     });
+     // we now check if the sum of percentages producers 100
+     let sumOfpercentages = relevantValuesPercentages.reduce((a, b) => a + b, 0);
+     console.log(sumOfpercentages, ' ->  This number should be 100');
+     let clearer1 = d3.select(".piechart");
+     clearer1.selectAll("*").remove();
+
+     let data = relevantValuesPercentages;
+     let width = 800,
+         height = 800,
          radius = Math.min(width, height) / 2;
-
-     var arc = d3.arc()
+     let arc = d3.arc()
          .outerRadius(radius - 10)
          .innerRadius(0);
-
-     var labelArc = d3.arc()
+     let labelArc = d3.arc()
          .outerRadius(radius - 40)
          .innerRadius(radius - 40);
-
-     var pie = d3.pie()
+     let pie = d3.pie()
          .sort(null)
          .value(function(d:any) { return d; });
 
 
-         let clearer1 = d3.select(".piechart");
-         clearer1.selectAll("*").remove();
-
-
-     var svg = d3.select(".piechart").append("svg")
+     let svg = d3.select(".piechart").append("svg")
          .attr("width", width)
          .attr("height", height)
          .append("g")
          .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
-       var g = svg.selectAll(".arc")
+       let g = svg.selectAll(".arc")
            .data(pie(data))
          .enter().append("g")
            .attr("class", "arc");
@@ -172,9 +179,15 @@ export class CardPickerComponent implements OnInit, AfterViewInit  {
             });
 
        g.append("text")
-           .attr("transform", function(d:any) { return "translate(" + labelArc.centroid(d) + ")"; })
+           .attr("transform", function(d:any) {
+              return "translate(" + labelArc.centroid(d) + ")";
+            })
            .attr("dy", ".35em")
-           .text(function(d:any) { return d.data; });
+           .style("color","white")
+           .style("font-size","small")
+           .text(function(d:any) {
+              return d.data.toFixed(2);
+             });
 
 
 
